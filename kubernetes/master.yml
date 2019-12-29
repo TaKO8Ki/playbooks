@@ -1,0 +1,28 @@
+---
+- hosts: masters
+  tasks:
+    - name: Install kubectl
+      yum:
+        name: kubectl
+        state: present
+        allow_downgrade: yes
+    - name: Start kubelet
+      shell: |
+        systemctl enable kubelet
+        systemctl start kubelet
+    - name: Reload daemon
+      shell: systemctl daemon-reload
+    - name: Reset master node
+      shell: kubeadm reset -f
+    - name: Disable swap
+      command: swapoff -a
+      when: ansible_swaptotal_mb > 0
+    - name: Start master node
+      shell: "kubeadm init --apiserver-advertise-address={{ ansible_eth0.ipv4.address }} --pod-network-cidr=10.244.0.0/16"
+    - name: Make a user for kubectl
+      shell: |
+        mkdir -p $HOME/.kube
+        sudo cp /etc/kubernetes/admin.conf $HOME/.kube/config
+        sudo chown $(id -u):$(id -g) $HOME/.kube/config
+    - name: Deploy flannel
+      shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
