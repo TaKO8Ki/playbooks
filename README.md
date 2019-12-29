@@ -1,9 +1,10 @@
 # Playbooks
-<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png" width="150px">
 
 ## Usage
 
 ### Kubernetes
+<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png" width="100px">
+
 ```sh
 # playbooks/kubernetes
 
