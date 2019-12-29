@@ -1,0 +1,60 @@
+---
+- hosts: all
+  tasks:
+    - name: Add http,https
+      become: yes
+      firewalld:
+        zone: public
+        service: "{{ item }}"
+        permanent: yes
+        state: enabled
+      with_items:
+        - http
+        - https
+    - name: Open ports
+      become: yes
+      firewalld:
+        port: "{{ item }}"
+        permanent: yes
+        state: enabled
+      with_items:
+        - 6443/tcp
+        - 2379/tcp
+        - 2380/tcp
+        - 10250/tcp
+        - 10251/tcp
+        - 10252/tcp
+    - name: Uninstall older version docker
+      shell: yum  -y remove  docker-common docker container-selinux docker-selinux docker-engine
+    - name: Install docker
+      shell: yum -y install lvm2 device-mapper device-mapper-persistent-data device-mapper-event device-mapper-libs device-mapper-event-libs
+    - name: Install docker repo
+      shell: curl https://download.docker.com/linux/centos/docker-ce.repo -o /etc/yum.repos.d/docker-ce.repo
+    - name: Install docker-ce
+      shell: yum -y install docker-ce --nobest
+    - name: Restart docker
+      systemd:
+        name: docker.service
+        state: restarted
+        daemon_reload: yes
+        enabled: yes
+    - name: Add kubernetes repo
+      yum_repository:
+        name: kubernetes
+        description: kubernetes repo
+        baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+        gpgcheck: no
+        enabled: yes
+    - name: Install kubelet libeadm
+      yum:
+        name: "{{ packages }}"
+      vars:
+        packages:
+          - kubelet
+          - kubeadm
+        state: present
+    - name: Restart firewalld
+      become: yes
+      systemd:
+        state: restarted
+        name: firewalld
