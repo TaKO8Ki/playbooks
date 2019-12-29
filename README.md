@@ -1,4 +1,5 @@
 # Playbooks
+<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png" width="150px">
 
 ## Usage
 
